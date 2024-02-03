@@ -17,7 +17,10 @@ export default function Post({ post, setPost, allPosts }) {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(e.target)),
                 postId = data.post_id,
-                tags = data.tags.split(",").map((tag) => tag.trim());
+                tags = data.tags
+                    .split(",")
+                    .map((tag) => tag.trim())
+                    .filter(Boolean);
             delete data.post_id;
             data.tags = tags;
             // if writing a new post, make sure it doesn't overwrite an old one
