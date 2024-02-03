@@ -120,7 +120,7 @@ export default function Post({ post, setPost, allPosts }) {
                         id="change-date"
                         type="datetime-local"
                         onChange={(e) => {
-                            dateRef.current.defaultValue = changeDate(
+                            dateRef.current.value = changeDate(
                                 e.target.value,
                                 true
                             );
