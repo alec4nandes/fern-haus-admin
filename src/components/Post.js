@@ -17,12 +17,16 @@ export default function Post({ post, setPost, allPosts }) {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(e.target)),
                 postId = data.post_id,
-                tags = data.tags
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter(Boolean);
+                splitter = (str) =>
+                    str
+                        .split(",")
+                        .map((tag) => tag.trim())
+                        .filter(Boolean),
+                tags = splitter(data.tags),
+                categories = splitter(data.categories);
             delete data.post_id;
             data.tags = tags;
+            data.categories = categories;
             // if writing a new post, make sure it doesn't overwrite an old one
             if (!post.post_id && allPosts.find((p) => p.post_id === postId)) {
                 alert(
@@ -104,6 +108,13 @@ export default function Post({ post, setPost, allPosts }) {
                         defaultValue={post.content}
                         required
                     ></textarea>
+                    <label htmlFor="categories">categories:</label>
+                    <input
+                        id="categories"
+                        name="categories"
+                        defaultValue={post.categories?.join(", ")}
+                        required
+                    />
                     <label htmlFor="tags">tags:</label>
                     <input
                         id="tags"
