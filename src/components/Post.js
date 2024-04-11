@@ -57,6 +57,28 @@ export default function Post({ post, setPost, allPosts }) {
         }
     }
 
+    function handleFormat(e) {
+        e.preventDefault();
+        const form = e.target.parentNode.parentNode,
+            content = form.content.value,
+            paragraphs =
+                "<p>\n" +
+                content.trim().replaceAll("\n\n", "\n</p>\n\n<p>\n") +
+                "\n</p>";
+        form.content.value = paragraphs;
+    }
+
+    function handleUnformat(e) {
+        e.preventDefault();
+        const form = e.target.parentNode.parentNode,
+            content = form.content.value,
+            paragraphs = content
+                .replaceAll("<p>\n", "")
+                .replaceAll("\n</p>", "")
+                .trim();
+        form.content.value = paragraphs;
+    }
+
     return (
         <>
             <header>
@@ -101,6 +123,14 @@ export default function Post({ post, setPost, allPosts }) {
                         name="feature_image_caption"
                         defaultValue={post.feature_image_caption}
                     />
+                    <label htmlFor="feature-image-alt">
+                        feature image alt:
+                    </label>
+                    <input
+                        id="feature-image-alt"
+                        name="feature_image_alt"
+                        defaultValue={post.feature_image_alt}
+                    />
                     <label htmlFor="content">content:</label>
                     <textarea
                         id="content"
@@ -108,6 +138,17 @@ export default function Post({ post, setPost, allPosts }) {
                         defaultValue={post.content}
                         required
                     ></textarea>
+                    <div
+                        style={{
+                            width: "fit-content",
+                            display: "flex",
+                            gap: "10px",
+                            margin: "auto",
+                        }}
+                    >
+                        <button onClick={handleFormat}>format</button>
+                        <button onClick={handleUnformat}>unformat</button>
+                    </div>
                     <label htmlFor="categories">categories:</label>
                     <input
                         id="categories"
