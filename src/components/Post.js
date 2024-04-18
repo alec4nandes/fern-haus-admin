@@ -4,6 +4,9 @@ import { deleteDoc, doc, setDoc } from "firebase/firestore";
 
 export default function Post({ post, setPost, allPosts }) {
     const postIdRef = useRef(),
+        titleRef = useRef(),
+        captionRef = useRef(),
+        contentRef = useRef(),
         dateRef = useRef(),
         changeDateRef = useRef();
 
@@ -57,26 +60,38 @@ export default function Post({ post, setPost, allPosts }) {
         }
     }
 
+    function handleSlugifyTitle(e) {
+        e.preventDefault();
+        const title = titleRef.current.value,
+            slug = title.trim().toLowerCase().replaceAll(" ", "-");
+        postIdRef.current.value = slug;
+    }
+
+    function handleFormatCaption(e) {
+        e.preventDefault();
+        const caption = captionRef.current.value,
+            formatted = caption.trim().replaceAll("<a ", `<a target="_blank" `);
+        captionRef.current.value = formatted;
+    }
+
     function handleFormat(e) {
         e.preventDefault();
-        const form = e.target.parentNode.parentNode,
-            content = form.content.value,
+        const content = contentRef.current.value,
             paragraphs =
                 "<p>\n" +
                 content.trim().replaceAll("\n\n", "\n</p>\n\n<p>\n") +
                 "\n</p>";
-        form.content.value = paragraphs;
+        contentRef.current.value = paragraphs;
     }
 
     function handleUnformat(e) {
         e.preventDefault();
-        const form = e.target.parentNode.parentNode,
-            content = form.content.value,
+        const content = contentRef.current.value,
             paragraphs = content
                 .replaceAll("<p>\n", "")
                 .replaceAll("\n</p>", "")
                 .trim();
-        form.content.value = paragraphs;
+        contentRef.current.value = paragraphs;
     }
 
     return (
@@ -94,8 +109,12 @@ export default function Post({ post, setPost, allPosts }) {
                         defaultValue={post.post_id}
                         required
                     />
+                    <button onClick={handleSlugifyTitle}>
+                        slugify title for ID
+                    </button>
                     <label htmlFor="title">title:</label>
                     <input
+                        ref={titleRef}
                         id="title"
                         name="title"
                         defaultValue={post.title}
@@ -119,10 +138,14 @@ export default function Post({ post, setPost, allPosts }) {
                         feature image caption:
                     </label>
                     <input
+                        ref={captionRef}
                         id="feature-image-caption"
                         name="feature_image_caption"
                         defaultValue={post.feature_image_caption}
                     />
+                    <button onClick={handleFormatCaption}>
+                        format caption
+                    </button>
                     <label htmlFor="feature-image-alt">
                         feature image alt:
                     </label>
@@ -133,6 +156,7 @@ export default function Post({ post, setPost, allPosts }) {
                     />
                     <label htmlFor="content">content:</label>
                     <textarea
+                        ref={contentRef}
                         id="content"
                         name="content"
                         defaultValue={post.content}
