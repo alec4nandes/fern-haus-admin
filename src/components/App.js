@@ -2,7 +2,7 @@ import "../css/app.css";
 import { useEffect, useState } from "react";
 import { auth } from "../database";
 import { onAuthStateChanged } from "firebase/auth";
-import Post from "./Post";
+import Post from "./Post/Post";
 import Posts from "./Posts";
 import SignIn from "./SignIn";
 
