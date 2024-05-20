@@ -3,11 +3,9 @@ import format from "./format.js";
 
 async function handleRevise({ e, contentRef, acceptRejectRef }) {
     e.preventDefault();
-    // clear notes
+    // clear notes and convert to plain text
     handleReject({ e, contentRef, acceptRejectRef });
-    const textInput = contentRef.current.innerText
-        .replaceAll("\n\n\n", "\n\n")
-        .trim();
+    const textInput = contentRef.current.innerText.trim();
     if (!textInput) {
         console.warn("INVALID TEXT INPUT");
         return;
@@ -31,8 +29,8 @@ function insertFormattedRevisions({ contentRef, formatted }) {
 
 function handleRevision(span) {
     const isRevised = window.confirm("Approve revision?"),
-        replace = span.querySelector(isRevised ? "b" : "s").innerText;
-    span.replaceWith(replace);
+        replace = span.querySelector(isRevised ? "b" : "s").innerHTML;
+    span.innerHTML = replace;
 }
 
 function handleAccept({ e, contentRef, acceptRejectRef }) {
@@ -44,14 +42,27 @@ function handleReject({ e, contentRef, acceptRejectRef }) {
 }
 
 function handleAcceptReject({ e, contentRef, isAccept, acceptRejectRef }) {
-    e.preventDefault();
-    const textElem = contentRef.current,
-        spans = [...textElem.querySelectorAll("span")];
-    for (const span of spans) {
-        const replace = span.querySelector(isAccept ? "b" : "s").innerText;
-        span.replaceWith(replace);
+    try {
+        e.preventDefault();
+        const textElem = contentRef.current,
+            spans = [...textElem.querySelectorAll("span")];
+        for (const span of spans) {
+            const replace = span.querySelector(isAccept ? "b" : "s")?.innerHTML;
+            replace && (span.innerHTML = replace);
+        }
+        contentRef.current.innerText = getPlainText({ contentRef });
+        acceptRejectRef.current.style.display = "none";
+    } catch (err) {
+        console.error(err);
     }
-    acceptRejectRef.current.style.display = "none";
 }
 
-export { handleRevise, handleAccept, handleReject };
+function getPlainText({ contentRef }) {
+    return contentRef.current.innerText
+        .replaceAll(/[\n]{3,}/g, "\n\n")
+        .replaceAll(/[‘’]+/g, "'")
+        .replaceAll(/[“”]+/g, '"')
+        .trim();
+}
+
+export { handleRevise, handleAccept, handleReject, getPlainText };
