@@ -79,13 +79,15 @@ body form #content {
 body form #content span:hover {
   cursor: pointer;
   opacity: 0.7;
+  -webkit-text-decoration: underline lightsalmon;
+          text-decoration: underline lightsalmon;
 }
 body form #content span s {
   font-style: italic;
-  color: lightgreen;
+  color: lightsalmon;
 }
 body form #content span b {
-  color: lightsalmon;
+  color: lightgreen;
 }
 body h1 {
   margin-bottom: 10px;

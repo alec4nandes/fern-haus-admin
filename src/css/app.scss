@@ -87,15 +87,16 @@ body {
                 &:hover {
                     cursor: pointer;
                     opacity: 0.7;
+                    text-decoration: underline lightsalmon;
                 }
 
                 & s {
                     font-style: italic;
-                    color: lightgreen;
+                    color: lightsalmon;
                 }
 
                 & b {
-                    color: lightsalmon;
+                    color: lightgreen;
                 }
             }
         }
