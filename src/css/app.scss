@@ -32,7 +32,8 @@ body {
 
     button,
     input,
-    textarea {
+    textarea,
+    #content {
         appearance: none;
         font-family: "Courier New", Courier, monospace;
         line-height: 1.2rem;
@@ -58,7 +59,8 @@ body {
         }
 
         input,
-        textarea {
+        textarea,
+        #content {
             background-color: #444;
             border: 0;
             color: #eee;
@@ -73,8 +75,28 @@ body {
             text-align: center;
         }
 
-        textarea {
+        textarea,
+        #content {
             height: 600px;
+        }
+
+        #content {
+            overflow: auto;
+
+            & span {
+                &:hover {
+                    cursor: pointer;
+                }
+
+                & s {
+                    font-style: italic;
+                    color: lightgreen;
+                }
+
+                & b {
+                    color: lightsalmon;
+                }
+            }
         }
     }
 

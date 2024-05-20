@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { db } from "../database";
 import { deleteDoc, doc, setDoc } from "firebase/firestore";
+import {
+    handleRevise,
+    handleAccept,
+    handleReject,
+} from "../ai-editor/editor.js";
 
 export default function Post({ post, setPost, allPosts }) {
     const postIdRef = useRef(),
@@ -8,12 +13,14 @@ export default function Post({ post, setPost, allPosts }) {
         captionRef = useRef(),
         contentRef = useRef(),
         dateRef = useRef(),
-        changeDateRef = useRef();
+        changeDateRef = useRef(),
+        acceptRejectRef = useRef();
 
     useEffect(() => {
+        contentRef.current.innerText = post.content;
         dateRef.current.value = changeDate(post.date, true);
         changeDateRef.current.value = changeDate(post.date);
-    }, [post.date]);
+    }, [post.content, post.date]);
 
     async function handlePublish(e) {
         try {
@@ -30,6 +37,8 @@ export default function Post({ post, setPost, allPosts }) {
             delete data.post_id;
             data.tags = tags;
             data.categories = categories;
+            // get content
+            data.content = contentRef.current.innerText;
             // if writing a new post, make sure it doesn't overwrite an old one
             if (!post.post_id && allPosts.find((p) => p.post_id === postId)) {
                 alert(
@@ -76,22 +85,32 @@ export default function Post({ post, setPost, allPosts }) {
 
     function handleFormat(e) {
         e.preventDefault();
-        const content = contentRef.current.value,
+        const content = contentRef.current.innerText,
             paragraphs =
                 "<p>\n" +
                 content.trim().replaceAll("\n\n", "\n</p>\n\n<p>\n") +
                 "\n</p>";
-        contentRef.current.value = paragraphs;
+        contentRef.current.innerText = paragraphs;
     }
 
     function handleUnformat(e) {
         e.preventDefault();
-        const content = contentRef.current.value,
+        const content = contentRef.current.innerText,
             paragraphs = content
                 .replaceAll("<p>\n", "")
                 .replaceAll("\n</p>", "")
                 .trim();
-        contentRef.current.value = paragraphs;
+        contentRef.current.innerText = paragraphs;
+    }
+
+    function getButtonsStyle({ display }) {
+        return {
+            width: "fit-content",
+            display,
+            flexWrap: "wrap",
+            gap: "10px",
+            margin: "auto",
+        };
     }
 
     return (
@@ -155,23 +174,57 @@ export default function Post({ post, setPost, allPosts }) {
                         defaultValue={post.feature_image_alt}
                     />
                     <label htmlFor="content">content:</label>
-                    <textarea
+                    <div
                         ref={contentRef}
                         id="content"
-                        name="content"
-                        defaultValue={post.content}
                         required
-                    ></textarea>
-                    <div
-                        style={{
-                            width: "fit-content",
-                            display: "flex",
-                            gap: "10px",
-                            margin: "auto",
-                        }}
-                    >
-                        <button onClick={handleFormat}>format</button>
-                        <button onClick={handleUnformat}>unformat</button>
+                        contentEditable={true}
+                    ></div>
+                    <div style={getButtonsStyle({ display: "flex" })}>
+                        <div style={getButtonsStyle({ display: "flex" })}>
+                            <button
+                                onClick={(e) =>
+                                    handleRevise({
+                                        e,
+                                        contentRef,
+                                        acceptRejectRef,
+                                    })
+                                }
+                            >
+                                revise
+                            </button>
+                            <div
+                                ref={acceptRejectRef}
+                                style={getButtonsStyle({ display: "none" })}
+                            >
+                                <button
+                                    onClick={(e) =>
+                                        handleAccept({
+                                            e,
+                                            contentRef,
+                                            acceptRejectRef,
+                                        })
+                                    }
+                                >
+                                    accept all
+                                </button>
+                                <button
+                                    onClick={(e) =>
+                                        handleReject({
+                                            e,
+                                            contentRef,
+                                            acceptRejectRef,
+                                        })
+                                    }
+                                >
+                                    reject all
+                                </button>
+                            </div>
+                        </div>
+                        <div style={getButtonsStyle({ display: "flex" })}>
+                            <button onClick={handleFormat}>format</button>
+                            <button onClick={handleUnformat}>unformat</button>
+                        </div>
                     </div>
                     <label htmlFor="categories">categories:</label>
                     <input
@@ -208,16 +261,11 @@ export default function Post({ post, setPost, allPosts }) {
                     <button type="submit">update</button>
                 </form>
             </main>
-            <footer>
+            <footer style={getButtonsStyle({ display: "flex" })}>
                 {post.post_id && (
-                    <>
-                        <button
-                            onClick={() => deletePost(postIdRef.current.value)}
-                        >
-                            delete
-                        </button>{" "}
-                        |{" "}
-                    </>
+                    <button onClick={() => deletePost(postIdRef.current.value)}>
+                        delete
+                    </button>
                 )}
                 <button onClick={() => setPost(null)}>back to admin</button>
             </footer>

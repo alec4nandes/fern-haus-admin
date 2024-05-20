@@ -30,7 +30,8 @@ body .button-link:hover {
 }
 body button,
 body input,
-body textarea {
+body textarea,
+body #content {
   -webkit-appearance: none;
      -moz-appearance: none;
           appearance: none;
@@ -54,7 +55,8 @@ body form button[type=submit] {
   font-weight: bold;
 }
 body form input,
-body form textarea {
+body form textarea,
+body form #content {
   background-color: #444;
   border: 0;
   color: #eee;
@@ -67,8 +69,22 @@ body form input[type=datetime-local] {
 body form label {
   text-align: center;
 }
-body form textarea {
+body form textarea,
+body form #content {
   height: 600px;
+}
+body form #content {
+  overflow: auto;
+}
+body form #content span:hover {
+  cursor: pointer;
+}
+body form #content span s {
+  font-style: italic;
+  color: lightgreen;
+}
+body form #content span b {
+  color: lightsalmon;
 }
 body h1 {
   margin-bottom: 10px;
