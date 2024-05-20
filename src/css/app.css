@@ -78,6 +78,7 @@ body form #content {
 }
 body form #content span:hover {
   cursor: pointer;
+  opacity: 0.7;
 }
 body form #content span s {
   font-style: italic;
