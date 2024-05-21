@@ -1,7 +1,7 @@
 export default function format({ original, revised }) {
     console.log(original, "\n-----\n", revised);
-    const originalWords = original.trim().split(" "),
-        revisedWords = revised.trim().split(" "),
+    const originalWords = original.split(" "),
+        revisedWords = revised.split(" "),
         revisions = getRevisions({ originalWords, revisedWords }),
         formatted = formatRevisions({ originalWords, revisedWords, revisions });
     console.log(revisions);
@@ -90,26 +90,27 @@ function getRevisionsHelper({
                 [winner] = [closestO, closestR].sort(sortSmallestAbsDiff);
             // if there's a valid winner, update the index info
             // to reflect the correct indexes in each whole array
+            const lastO = revisions.at(-1)?.match.originalIndex || 0,
+                lastR = revisions.at(-1)?.match.revisedIndex || 0,
+                difference = {
+                    original: {
+                        word: originalWord,
+                        index: i + lastO,
+                    },
+                    revised: {
+                        word: revisedWord,
+                        index: i + lastR,
+                    },
+                };
             if (winner) {
                 const { originalIndex, revisedIndex } = winner,
-                    lastO = revisions.at(-1)?.match.originalIndex || 0,
-                    lastR = revisions.at(-1)?.match.revisedIndex || 0,
                     result = {
                         match: {
                             word: winner.word,
                             originalIndex: originalIndex + lastO,
                             revisedIndex: revisedIndex + lastR,
                         },
-                        difference: {
-                            original: {
-                                word: originalWord,
-                                index: i + lastO,
-                            },
-                            revised: {
-                                word: revisedWord,
-                                index: i + lastR,
-                            },
-                        },
+                        difference,
                     };
                 revisions.push(result);
                 // slice the arrays so that they both start with the
@@ -124,7 +125,8 @@ function getRevisionsHelper({
                 });
             } else {
                 // if no valid winner, one or both of the remaining
-                // arrays are exhausted
+                // arrays are exhausted or they've ended with a revision
+                revisions.push({ difference });
                 break;
             }
         }
@@ -146,18 +148,32 @@ function formatRevisions({ originalWords, revisedWords, revisions }) {
             .join(" ");
         oIndex = difference.original.index;
         rIndex = difference.revised.index;
+        // no match means the text ends with a revision
         const originalPhrase = originalWords
-                .slice(oIndex, match.originalIndex)
+                .slice(
+                    ...(match
+                        ? [oIndex, match.originalIndex]
+                        : [difference.original.index])
+                )
                 .join(" "),
             revisedPhrase = revisedWords
-                .slice(rIndex, match.revisedIndex)
+                .slice(
+                    ...(match
+                        ? [rIndex, match.revisedIndex]
+                        : [difference.revised.index])
+                )
                 .join(" ");
-        formatted += ` <span><s>${originalPhrase}</s><b>${revisedPhrase}</b></span> `;
-        oIndex = match.originalIndex;
-        rIndex = match.revisedIndex;
+        formatted +=
+            ` <span class="revision"><s>${originalPhrase}</s>` +
+            `<b>${revisedPhrase}</b></span> `;
+        oIndex = match?.originalIndex;
+        rIndex = match?.revisedIndex;
     }
+    const lastRevision = revisions.at(-1);
     return (
         formatted +
-        originalWords.slice(revisions.at(-1).match.originalIndex).join(" ")
-    );
+        (lastRevision.match
+            ? originalWords.slice(lastRevision.match.originalIndex).join(" ")
+            : "")
+    ).replaceAll("\n", "<br>");
 }

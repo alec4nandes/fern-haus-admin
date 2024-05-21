@@ -5,8 +5,9 @@ import {
     handleReject,
 } from "../../ai-editor/editor.js";
 import { getBtnContainerStyle } from "./Post";
+import { getPlainText } from "./FormatButtons";
 
-export default function ReviseButtons({ contentRef, textInput }) {
+export default function ReviseButtons({ contentRef, reviseInput }) {
     const acceptRejectRef = useRef();
 
     function handler(e) {
@@ -17,8 +18,9 @@ export default function ReviseButtons({ contentRef, textInput }) {
                 "reject all": handleReject,
             },
             key = e.target.innerText.trim(),
-            arg = { e, textInput, contentRef, acceptRejectRef };
+            arg = { e, reviseInput, contentRef, acceptRejectRef };
         funcs[key]?.(arg);
+        key !== "revise" && getPlainText({ contentRef });
     }
 
     return (

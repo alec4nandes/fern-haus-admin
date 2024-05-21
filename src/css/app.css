@@ -76,17 +76,17 @@ body form #content {
 body form #content {
   overflow: auto;
 }
-body form #content span:hover {
+body form #content span.revision:hover {
   cursor: pointer;
   opacity: 0.7;
   -webkit-text-decoration: underline lightsalmon;
           text-decoration: underline lightsalmon;
 }
-body form #content span s {
+body form #content span.revision s {
   font-style: italic;
   color: lightsalmon;
 }
-body form #content span b {
+body form #content span.revision b {
   color: lightgreen;
 }
 body h1 {

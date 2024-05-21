@@ -1,10 +1,9 @@
-import { getPlainText } from "../../ai-editor/editor.js";
 import { getBtnContainerStyle } from "./Post";
 
 export default function FormatButtons({ contentRef }) {
     function handlePlainText(e) {
         e.preventDefault();
-        contentRef.current.innerText = getPlainText({ contentRef });
+        getPlainText({ contentRef });
     }
 
     function handleFormat(e) {
@@ -35,3 +34,13 @@ export default function FormatButtons({ contentRef }) {
         </div>
     );
 }
+
+function getPlainText({ contentRef }) {
+    contentRef.current.innerText = contentRef.current.innerText
+        .replaceAll(/[\n]{3,}/g, "\n\n")
+        .replaceAll(/[‘’]+/g, "'")
+        .replaceAll(/[“”]+/g, '"')
+        .trim();
+}
+
+export { getPlainText };

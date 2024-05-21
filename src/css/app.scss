@@ -83,7 +83,7 @@ body {
         #content {
             overflow: auto;
 
-            & span {
+            & span.revision {
                 &:hover {
                     cursor: pointer;
                     opacity: 0.7;
