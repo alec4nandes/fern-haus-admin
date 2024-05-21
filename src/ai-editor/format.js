@@ -143,9 +143,9 @@ function formatRevisions({ originalWords, revisedWords, revisions }) {
         oIndex = 0,
         rIndex = 0;
     for (const { match, difference } of revisions) {
-        formatted += originalWords
-            .slice(oIndex, difference.original.index)
-            .join(" ");
+        formatted +=
+            " " +
+            originalWords.slice(oIndex, difference.original.index).join(" ");
         oIndex = difference.original.index;
         rIndex = difference.revised.index;
         // no match means the text ends with a revision
@@ -165,7 +165,7 @@ function formatRevisions({ originalWords, revisedWords, revisions }) {
                 .join(" ");
         formatted +=
             ` <span class="revision"><s>${originalPhrase}</s>` +
-            `<b>${revisedPhrase}</b></span> `;
+            `<b>${revisedPhrase}</b></span>`;
         oIndex = match?.originalIndex;
         rIndex = match?.revisedIndex;
     }
