@@ -1,23 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { handleReject, handleRevise } from "../../ai-editor/editor";
 import EditButtons from "./EditButtons";
 
 export default function Content({ post, contentRef }) {
-    const [reviseInput, setReviseInput] = useState("");
+    const [isRevising, setIsRevising] = useState(false),
+        acceptRejectRef = useRef();
 
     useEffect(() => {
         contentRef.current.innerText = post?.content || "";
     }, [contentRef, post]);
 
-    function getChildNodes(selection) {
-        const allNodes = contentRef.current.childNodes,
-            range = selection.getRangeAt(0),
-            { startOffset, startContainer, endOffset, endContainer } = range;
-        return {
-            allNodes,
-            start: { startOffset, startContainer },
-            end: { endOffset, endContainer },
-        };
-    }
+    useEffect(() => {
+        if (isRevising) {
+            // clear revisions and change to plain text
+            handleReject({ contentRef, acceptRejectRef });
+        }
+    }, [isRevising, contentRef]);
 
     return (
         <>
@@ -27,16 +25,21 @@ export default function Content({ post, contentRef }) {
                 id="content"
                 required
                 contentEditable={true}
-                onSelect={() => {
-                    const selection = window.getSelection();
-                    setReviseInput({
-                        textInput: selection.toString(),
-                        nodeInfo: getChildNodes(selection),
-                    });
+                onChange={() => setIsRevising(false)}
+                onSelect={async () => {
+                    if (isRevising) {
+                        console.log("Revising...");
+                        const success = await handleRevise({
+                            contentRef,
+                            acceptRejectRef,
+                        });
+                        success && setIsRevising(false);
+                    }
                 }}
-                onBlur={() => setTimeout(() => setReviseInput(""), 200)}
             ></div>
-            <EditButtons {...{ contentRef, reviseInput }} />
+            <EditButtons
+                {...{ contentRef, isRevising, setIsRevising, acceptRejectRef }}
+            />
         </>
     );
 }

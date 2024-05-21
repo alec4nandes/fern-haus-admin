@@ -1,15 +1,16 @@
-import { useRef } from "react";
 import {
     handleRevise,
     handleAccept,
     handleReject,
 } from "../../ai-editor/editor.js";
 import { getBtnContainerStyle } from "./Post";
-import { getPlainText } from "./FormatButtons";
 
-export default function ReviseButtons({ contentRef, reviseInput }) {
-    const acceptRejectRef = useRef();
-
+export default function ReviseButtons({
+    contentRef,
+    isRevising,
+    setIsRevising,
+    acceptRejectRef,
+}) {
     function handler(e) {
         e.preventDefault();
         const funcs = {
@@ -18,14 +19,23 @@ export default function ReviseButtons({ contentRef, reviseInput }) {
                 "reject all": handleReject,
             },
             key = e.target.innerText.trim(),
-            arg = { e, reviseInput, contentRef, acceptRejectRef };
+            arg = { e, contentRef, acceptRejectRef };
         funcs[key]?.(arg);
-        key !== "revise" && getPlainText({ contentRef });
     }
 
     return (
         <div style={getBtnContainerStyle({ display: "flex" })}>
-            <button onClick={handler}>revise</button>
+            <label className="checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={isRevising}
+                    onChange={(e) => setIsRevising(e.target.checked)}
+                />
+                <span>
+                    revise{" "}
+                    {isRevising && <em>(highlight content to revise)</em>}
+                </span>
+            </label>
             <div
                 ref={acceptRejectRef}
                 style={getBtnContainerStyle({ display: "none" })}

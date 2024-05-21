@@ -1,31 +1,31 @@
 import getOpenAiRevised from "./openai.js";
 import format from "./format.js";
 
-async function handleRevise({ e, reviseInput, contentRef, acceptRejectRef }) {
-    e.preventDefault();
-    const warning =
-        "Invalid text! Make sure the content is highlighted " +
-        "and under 700 characters.";
-    if (!reviseInput) {
-        alert(warning);
-        return;
-    }
-    // clear notes
-    handleReject({ e, contentRef, acceptRejectRef });
-    const { textInput, nodeInfo } = reviseInput,
+async function handleRevise({ e, contentRef, acceptRejectRef }) {
+    e?.preventDefault();
+    const selection = window.getSelection(),
+        textInput = selection.toString(),
+        nodeInfo = getNodeInfo({ contentRef, selection }),
         selectionIsEmpty = !textInput,
         textIsTooLong = textInput.length > 700,
         { start, end } = nodeInfo,
         { startContainer } = start,
         { endContainer } = end;
     if (selectionIsEmpty || textIsTooLong) {
+        const warning =
+            "Invalid text! Make sure the content is highlighted " +
+            "and under 700 characters.";
         alert(warning);
-        return;
+        return false;
     }
     // TODO: better workaround for contentRef being one the containers
     if ([startContainer, endContainer].includes(contentRef.current)) {
-        alert("Back container selected. Please select only text");
-        return;
+        alert(
+            "Selection starts or ends with a line break. " +
+                "We're working on a fix, but until then, " +
+                "please start and end you selection with a character."
+        );
+        return false;
     }
     const revised = await getOpenAiRevised(textInput),
         formatted = format({ original: textInput, revised });
@@ -33,6 +33,18 @@ async function handleRevise({ e, reviseInput, contentRef, acceptRejectRef }) {
         insertFormattedRevisions({ formatted, nodeInfo, contentRef });
         acceptRejectRef.current.style.display = "flex";
     }
+    return true;
+}
+
+function getNodeInfo({ contentRef, selection }) {
+    const allNodes = contentRef.current.childNodes,
+        range = selection.getRangeAt(0),
+        { startOffset, startContainer, endOffset, endContainer } = range;
+    return {
+        allNodes,
+        start: { startOffset, startContainer },
+        end: { endOffset, endContainer },
+    };
 }
 
 function insertFormattedRevisions({ formatted, nodeInfo, contentRef }) {
@@ -59,18 +71,16 @@ function insertFormattedRevisions({ formatted, nodeInfo, contentRef }) {
             } else {
                 text += wholeText;
             }
-        } else {
-            if (node === startContainer) {
-                uncopied = wholeText.slice(0, startOffset);
-                text += uncopied + formatted;
-                isCopying = true;
-            } else if (node === endContainer) {
-                uncopied = wholeText.slice(endOffset);
-                text += uncopied;
-                isCopying = false;
-            } else if (!isCopying) {
-                text += wholeText;
-            }
+        } else if (node === startContainer) {
+            uncopied = wholeText.slice(0, startOffset);
+            text += uncopied + formatted;
+            isCopying = true;
+        } else if (node === endContainer) {
+            uncopied = wholeText.slice(endOffset);
+            text += uncopied;
+            isCopying = false;
+        } else if (!isCopying) {
+            text += wholeText;
         }
     }
     contentRef.current.innerHTML = text;
@@ -82,11 +92,17 @@ function insertFormattedRevisions({ formatted, nodeInfo, contentRef }) {
 }
 
 function handleRevision(span) {
-    const isRevised = window.confirm("Approve revision?"),
-        replace = span.querySelector(isRevised ? "b" : "s").innerHTML;
-    span.innerHTML = replace;
-    span.onclick = () => {};
-    span.classList.remove("revision");
+    const isRevised = window.confirm("Approve revision?");
+    reviseSpan(span, isRevised);
+}
+
+function reviseSpan(span, isRevised) {
+    const replace = span.querySelector(isRevised ? "b" : "s").innerHTML;
+    if (replace) {
+        span.innerHTML = replace;
+        span.onclick = () => {};
+        span.classList.remove("revision");
+    }
 }
 
 function handleAccept({ e, contentRef, acceptRejectRef }) {
@@ -99,21 +115,25 @@ function handleReject({ e, contentRef, acceptRejectRef }) {
 
 function handleAcceptReject({ e, contentRef, isAccept, acceptRejectRef }) {
     try {
-        e.preventDefault();
+        e?.preventDefault();
         const textElem = contentRef.current,
             spans = [...textElem.querySelectorAll("span")];
         for (const span of spans) {
-            const replace = span.querySelector(isAccept ? "b" : "s")?.innerHTML;
-            if (replace) {
-                span.innerHTML = replace;
-                span.onclick = () => {};
-                span.classList.remove("revision");
-            }
+            reviseSpan(span, isAccept);
         }
+        getPlainText({ contentRef });
         acceptRejectRef.current.style.display = "none";
     } catch (err) {
         console.error(err);
     }
+}
+
+function getPlainText({ contentRef }) {
+    contentRef.current.innerText = contentRef.current.innerText
+        .replaceAll(/[\n]{3,}/g, "\n\n")
+        .replaceAll(/[‘’]+/g, "'")
+        .replaceAll(/[“”]+/g, '"')
+        .trim();
 }
 
 export { handleRevise, handleAccept, handleReject };

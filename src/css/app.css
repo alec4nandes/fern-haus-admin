@@ -66,6 +66,30 @@ body form input[type=datetime-local] {
   width: -moz-fit-content;
   width: fit-content;
 }
+body form .checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: left;
+}
+body form .checkbox-label input[type=checkbox] {
+  height: 20px;
+  width: 20px;
+  background-color: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+body form .checkbox-label input[type=checkbox]:hover {
+  cursor: pointer;
+}
+body form .checkbox-label input[type=checkbox]:checked:before {
+  content: "X";
+  color: maroon;
+  font-weight: bold;
+  line-height: 0;
+}
 body form label {
   text-align: center;
 }
