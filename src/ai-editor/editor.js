@@ -11,7 +11,10 @@ async function handleRevise({ e, contentRef, acceptRejectRef }) {
         { start, end } = nodeInfo,
         { startContainer } = start,
         { endContainer } = end;
-    if (selectionIsEmpty || textIsTooLong) {
+    if (selectionIsEmpty) {
+        return false;
+    }
+    if (textIsTooLong) {
         const warning =
             "Invalid text! Make sure the content is highlighted " +
             "and under 700 characters.";
@@ -27,13 +30,21 @@ async function handleRevise({ e, contentRef, acceptRejectRef }) {
         );
         return false;
     }
-    const revised = await getOpenAiRevised(textInput),
-        formatted = format({ original: textInput, revised });
-    if (formatted) {
-        insertFormattedRevisions({ formatted, nodeInfo, contentRef });
-        acceptRejectRef.current.style.display = "flex";
+    console.log("Revising...");
+    try {
+        const revised = await getOpenAiRevised(textInput),
+            formatted = format({ original: textInput, revised });
+        if (formatted) {
+            insertFormattedRevisions({ formatted, nodeInfo, contentRef });
+            acceptRejectRef.current.style.display = "flex";
+        }
+        return true;
+    } catch (err) {
+        alert(
+            "There was an error revising. " +
+                "Try selecting a smaller section of text."
+        );
     }
-    return true;
 }
 
 function getNodeInfo({ contentRef, selection }) {
@@ -97,7 +108,7 @@ function handleRevision(span) {
 }
 
 function reviseSpan(span, isRevised) {
-    const replace = span.querySelector(isRevised ? "b" : "s").innerHTML;
+    const replace = span.querySelector(isRevised ? "b" : "s")?.innerHTML;
     if (replace) {
         span.innerHTML = replace;
         span.onclick = () => {};

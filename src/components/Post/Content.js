@@ -11,10 +11,8 @@ export default function Content({ post, contentRef }) {
     }, [contentRef, post]);
 
     useEffect(() => {
-        if (isRevising) {
-            // clear revisions and change to plain text
-            handleReject({ contentRef, acceptRejectRef });
-        }
+        // clear revisions and change to plain text
+        isRevising && handleReject({ contentRef, acceptRejectRef });
     }, [isRevising, contentRef]);
 
     return (
@@ -28,7 +26,6 @@ export default function Content({ post, contentRef }) {
                 onChange={() => setIsRevising(false)}
                 onSelect={async () => {
                     if (isRevising) {
-                        console.log("Revising...");
                         const success = await handleRevise({
                             contentRef,
                             acceptRejectRef,
