@@ -1,13 +1,17 @@
 import getOpenAiRevised from "./openai.js";
 import format from "./format.js";
 
-async function handleRevise({ e, contentRef, acceptRejectRef }) {
+async function handleRevise({ e, textInput, contentRef, acceptRejectRef }) {
     e.preventDefault();
     // clear notes and convert to plain text
     handleReject({ e, contentRef, acceptRejectRef });
-    const textInput = contentRef.current.innerText.trim();
-    if (!textInput) {
-        console.warn("INVALID TEXT INPUT");
+    const selectionIsEmpty = !textInput,
+        textIsTooLong = textInput.length > 700;
+    if (selectionIsEmpty || textIsTooLong) {
+        alert(
+            "Invalid text! Make sure the content is highlighted " +
+                "and under 700 characters."
+        );
         return;
     }
     const revised = await getOpenAiRevised(textInput),

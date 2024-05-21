@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import EditButtons from "./EditButtons";
 
 export default function Content({ post, contentRef }) {
+    const [textInput, setTextInput] = useState("");
+
     useEffect(() => {
         contentRef.current.innerText = post?.content || "";
     }, [contentRef, post]);
@@ -14,8 +16,10 @@ export default function Content({ post, contentRef }) {
                 id="content"
                 required
                 contentEditable={true}
+                onSelect={() => setTextInput(window.getSelection().toString())}
+                onBlur={() => setTimeout(() => setTextInput(""), 500)}
             ></div>
-            <EditButtons {...{ contentRef }} />
+            <EditButtons {...{ contentRef, textInput }} />
         </>
     );
 }
