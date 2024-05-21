@@ -15,6 +15,22 @@ export default function Content({ post, contentRef }) {
         isRevising && handleReject({ contentRef, acceptRejectRef });
     }, [isRevising, contentRef]);
 
+    async function handleSelect() {
+        if (isRevising) {
+            const success = await handleRevise({
+                contentRef,
+                acceptRejectRef,
+            });
+            success && setIsRevising(false);
+        }
+    }
+
+    function isMobile() {
+        const regex =
+            /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        return regex.test(navigator.userAgent);
+    }
+
     return (
         <>
             <label htmlFor="content">content:</label>
@@ -24,15 +40,8 @@ export default function Content({ post, contentRef }) {
                 required
                 contentEditable={true}
                 onChange={() => setIsRevising(false)}
-                onSelect={async () => {
-                    if (isRevising) {
-                        const success = await handleRevise({
-                            contentRef,
-                            acceptRejectRef,
-                        });
-                        success && setIsRevising(false);
-                    }
-                }}
+                onSelect={() => !isMobile() && handleSelect()}
+                onTouchEnd={() => isMobile() && handleSelect()}
             ></div>
             <EditButtons
                 {...{ contentRef, isRevising, setIsRevising, acceptRejectRef }}
